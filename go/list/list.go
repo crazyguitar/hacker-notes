@@ -51,7 +51,9 @@ func (l *List) remove(v int) *List {
 		tmp := cur.next
 
 		if cur.prev == nil {
-			tmp.prev = nil
+			if tmp != nil {
+				tmp.prev = nil
+			}
 			l = tmp
 		} else if cur.next == nil {
 			pre.next = tmp
@@ -86,15 +88,9 @@ func main() {
 
 	l.printList()
 
-	// remove value: 5
-	l = l.remove(5)
-	l.printList()
-
-	// remove value: 2
-	l = l.remove(2)
-	l.printList()
-
-	// remove value: 1
-	l = l.remove(1)
-	l.printList()
+	// remove all
+	for _, v := range s {
+		l = l.remove(v)
+		l.printList()
+	}
 }
