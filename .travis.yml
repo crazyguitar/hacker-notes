@@ -1,10 +1,21 @@
 matrix:
   include:
     - language: go
-      go:
-        - 1.8
-        - 1.9
-        - master
+      go: 1.8
+      before_script:
+        - go get github.com/golang/lint/golint
+      script:
+        - cd go
+        - make
+    - language: go
+      go: 1.9
+      before_script:
+        - go get github.com/golang/lint/golint
+      script:
+        - cd go
+        - make
+    - language: go
+      go: master
       before_script:
         - go get github.com/golang/lint/golint
       script:
