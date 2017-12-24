@@ -1,4 +1,4 @@
-SUBDIR = list
+SUBDIR = list tree
 
 .PHONY: all clean $(SUBDIR)
 
