@@ -1,4 +1,4 @@
-SUBDIR = list tree
+SUBDIR = list tree socket
 
 .PHONY: all clean $(SUBDIR)
 
