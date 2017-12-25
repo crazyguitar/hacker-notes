@@ -1,0 +1,2 @@
+PROFILE_FUNC(fib)
+PROFILE_FUNC(sleep_func)

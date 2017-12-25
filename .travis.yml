@@ -21,3 +21,13 @@ matrix:
       script:
         - cd go
         - make
+    - compiler: clang
+      os: osx
+      script:
+        - cd c
+        - make
+    - compiler: gcc
+      os: linux
+      script:
+        - cd c
+        - make
