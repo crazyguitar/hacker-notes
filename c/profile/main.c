@@ -5,10 +5,9 @@
 int main(int argc, char *argv[])
 {
 	int i = 0;
-	int ret = 0;
 
 	for (i = 0; i < 100000; i++) {
-		ret = fib(i);
+		fib(i);
 	}
 
 	for (i = 1; i < 3; i++) {

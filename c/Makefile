@@ -1,4 +1,4 @@
-SUBDIR = go c
+SUBDIR = profile
 
 .PHONY: all clean $(SUBDIR)
 

@@ -9,16 +9,16 @@ CFLAGS += -g -O2 -Wall -Werror -I$(SUB)
 
 .PHONY: all clean $(SUB)
 
-all: $(EXE) $(OBJ) $(SUB)
-
-%: %.o $(SUB)
-	$(CC) -o $@ $< $(LIB) $(LDFLAGS) 
-
-$.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+all: $(SUB) $(OBJ) $(EXE)
 
 $(SUB):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+%.o: %.c $(SUB)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+%: %.o $(SUB)
+	$(CC) -o $@ $< $(LIB) $(LDFLAGS)
 
 clean: $(SUB)
 	rm -rf $(OBJ) $(EXE)
