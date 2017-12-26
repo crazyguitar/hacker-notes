@@ -87,7 +87,7 @@ func main() {
 	for {
 		rfds := wfds
 
-		err := syscall.Select(FDSETSIZE, &rfds, nil, nil, &timeout)
+		_, err := syscall.Select(FDSETSIZE, &rfds, nil, nil, &timeout)
 		if err != nil {
 			log.Println(err)
 			continue
