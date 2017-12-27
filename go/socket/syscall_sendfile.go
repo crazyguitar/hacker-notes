@@ -1,7 +1,10 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"syscall"
@@ -14,7 +17,7 @@ const (
 	port        = 5566
 )
 
-func doSendfile(inFileName string, outFileName string) {
+func copyFile(inFileName string, outFileName string) {
 
 	inFile, err := os.Open(inFileName)
 	if err != nil {
@@ -38,6 +41,16 @@ func doSendfile(inFileName string, outFileName string) {
 	inFd := int(inFile.Fd())
 	outFd := int(outFile.Fd())
 
+	doSendfile(inFd, outFd)
+
+	eq := checksum(inFileName, outFileName)
+	if !eq {
+		panic("check sum not equal")
+	}
+}
+
+func doSendfile(inFd int, outFd int) {
+
 	var offset int64
 	count := 8192
 
@@ -52,13 +65,7 @@ func doSendfile(inFileName string, outFileName string) {
 	}
 }
 
-func server() {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	}()
+func server(ok chan bool) {
 
 	inFile, err := os.Open(inFileName)
 	if err != nil {
@@ -66,15 +73,11 @@ func server() {
 	}
 	defer inFile.Close()
 
-	st, err := inFile.Stat()
-	if err != nil {
-		panic(err)
-	}
-
 	fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
 	if err != nil {
 		panic(err)
 	}
+	defer syscall.Close(fd)
 
 	err = syscall.SetsockoptInt(fd, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
 	if err != nil {
@@ -94,23 +97,87 @@ func server() {
 		panic(err)
 	}
 
+	ok <- true
+
 	cFd, _, err := syscall.Accept(fd)
 	if err != nil {
 		panic(err)
 	}
+	defer syscall.Close(cFd)
 
-	var offset int64
-	count := 8192
-	fSize := st.Size()
 	inFd := int(inFile.Fd())
+	doSendfile(inFd, cFd)
+}
 
-	for fSize > 0 {
-		n, err := syscall.Sendfile(cFd, inFd, &offset, count)
+func client(ok chan bool) {
+
+	outFile, err := os.Create(outFileName)
+	if err != nil {
+		panic(err)
+	}
+	defer outFile.Close()
+
+	fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
+	if err != nil {
+		panic(err)
+	}
+	defer syscall.Close(fd)
+
+	addr := syscall.SockaddrInet4{Port: port}
+	copy(addr.Addr[:], net.ParseIP(host).To4())
+
+	err = syscall.Connect(fd, &addr)
+	if err != nil {
+		panic(err)
+	}
+
+	outFd := int(outFile.Fd())
+	var buf [4096]byte
+
+	for {
+		n, _ := syscall.Read(fd, buf[:])
 		if err != nil {
 			panic(err)
 		}
-		fSize -= int64(n)
+		if n <= 0 {
+			break
+		}
+		_, err = syscall.Write(outFd, buf[:n])
+		if err != nil {
+			panic(err)
+		}
 	}
+	ok <- true
+}
+
+func checksum(file1 string, file2 string) (eq bool) {
+
+	f1, err := os.Open(file1)
+	if err != nil {
+		panic(err)
+	}
+	defer f1.Close()
+
+	f2, err := os.Open(file2)
+	if err != nil {
+		panic(err)
+	}
+	defer f2.Close()
+
+	h1 := sha256.New()
+	if _, err := io.Copy(h1, f1); err != nil {
+		panic(err)
+	}
+
+	h2 := sha256.New()
+	if _, err := io.Copy(h2, f2); err != nil {
+		panic(err)
+	}
+
+	s1 := hex.EncodeToString(h1.Sum(nil))
+	s2 := hex.EncodeToString(h2.Sum(nil))
+	return s1 == s2
+
 }
 
 func main() {
@@ -134,10 +201,15 @@ func main() {
 		if err != nil && !os.IsNotExist(err) {
 			fmt.Println(err)
 		}
+
+		err = os.Remove(outFileName)
+		if err != nil && !os.IsNotExist(err) {
+			fmt.Println(err)
+		}
 	}()
 
 	buf := make([]byte, 1024)
-	count := 1000 * 512
+	count := 1000 * 128
 
 	for i := 0; i < count; i++ {
 		n, err := inFile.Read(buf)
@@ -152,9 +224,20 @@ func main() {
 			panic(err)
 		}
 	}
-	outFile.Close()
-	outFile = nil
 
-	doSendfile(inFileName, outFileName)
-	server()
+	outFile.Sync()
+
+	ok := make(chan bool)
+
+	copyFile(inFileName, outFileName)
+
+	go server(ok)
+	<-ok
+	go client(ok)
+	<-ok
+
+	eq := checksum(inFileName, outFileName)
+	if !eq {
+		panic("check sum not equal")
+	}
 }
