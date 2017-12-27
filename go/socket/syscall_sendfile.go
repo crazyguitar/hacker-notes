@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"syscall"
 )
@@ -9,6 +10,8 @@ import (
 const (
 	inFileName  = ".in"
 	outFileName = ".out"
+	host        = "127.0.0.1"
+	port        = 5566
 )
 
 func doSendfile(inFileName string, outFileName string) {
@@ -46,6 +49,67 @@ func doSendfile(inFileName string, outFileName string) {
 		if n == 0 {
 			break
 		}
+	}
+}
+
+func server() {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}()
+
+	inFile, err := os.Open(inFileName)
+	if err != nil {
+		panic(err)
+	}
+	defer inFile.Close()
+
+	st, err := inFile.Stat()
+	if err != nil {
+		panic(err)
+	}
+
+	fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	err = syscall.SetsockoptInt(fd, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
+	if err != nil {
+		panic(err)
+	}
+
+	addr := syscall.SockaddrInet4{Port: port}
+	copy(addr.Addr[:], net.ParseIP(host).To4())
+
+	err = syscall.Bind(fd, &addr)
+	if err != nil {
+		panic(err)
+	}
+
+	err = syscall.Listen(fd, 1)
+	if err != nil {
+		panic(err)
+	}
+
+	cFd, _, err := syscall.Accept(fd)
+	if err != nil {
+		panic(err)
+	}
+
+	var offset int64
+	count := 8192
+	fSize := st.Size()
+	inFd := int(inFile.Fd())
+
+	for fSize > 0 {
+		n, err := syscall.Sendfile(cFd, inFd, &offset, count)
+		if err != nil {
+			panic(err)
+		}
+		fSize -= int64(n)
 	}
 }
 
@@ -92,4 +156,5 @@ func main() {
 	outFile = nil
 
 	doSendfile(inFileName, outFileName)
+	server()
 }
