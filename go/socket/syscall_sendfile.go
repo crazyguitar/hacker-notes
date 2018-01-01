@@ -135,7 +135,7 @@ func client(ok chan bool) {
 	var buf [4096]byte
 
 	for {
-		n, _ := syscall.Read(fd, buf[:])
+		n, err := syscall.Read(fd, buf[:])
 		if err != nil {
 			panic(err)
 		}
