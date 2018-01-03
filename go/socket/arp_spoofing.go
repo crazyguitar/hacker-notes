@@ -172,7 +172,7 @@ func getInterface(ifname string, dev *net.Interface) {
 			return
 		}
 	}
-	log.Fatal("Cannot found the specific interface!")
+	log.Fatal("Cannot find the specific interface!")
 }
 
 // How arp spoofing work?
@@ -228,10 +228,10 @@ func main() {
 	dstMac := args[1]
 	srcMac := dev.HardwareAddr.String()
 
-	pkt := []byte{}
 	arp := ARPMarshal(targetIP, targetMac, senderIP, senderMac)
 	eth := ETHMarshal(dstMac, srcMac)
 
+	pkt := []byte{}
 	pkt = append(pkt, eth...)
 	pkt = append(pkt, arp...)
 
@@ -240,7 +240,7 @@ func main() {
 
 	// run a test webserver
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Your ARP has been poisoned!!!")
+		fmt.Fprintln(w, "Your ARP table have been poisoned!!!")
 	})
 	http.ListenAndServe(":8000", nil)
 }
