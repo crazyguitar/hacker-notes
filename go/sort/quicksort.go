@@ -5,29 +5,30 @@ import (
 	"math/rand"
 )
 
-func partition(arr []int) int {
+type compare func(x int, y int) int
 
-	pivot := arr[0]
+func cmp(x int, y int) int {
+	return x - y
+}
+
+func partition(arr []int, cmp compare) int {
 
 	lIdx := 0
 	rIdx := len(arr) - 1
 
-	for {
-		for arr[lIdx] < pivot {
-			lIdx++
+	pivot := arr[rIdx]
+
+	for i, v := range arr {
+		if cmp(v, pivot) >= 0 {
+			continue
 		}
 
-		for arr[rIdx] > pivot {
-			rIdx--
-		}
-
-		if lIdx >= rIdx {
-			break
-		}
-
-		arr[lIdx], arr[rIdx] = arr[rIdx], arr[lIdx]
+		arr[i], arr[lIdx] = arr[lIdx], arr[i]
+		lIdx++
 	}
-	return rIdx
+	arr[lIdx], arr[rIdx] = arr[rIdx], arr[lIdx]
+
+	return lIdx
 }
 
 func quicksort(arr []int) []int {
@@ -39,25 +40,24 @@ func quicksort(arr []int) []int {
 		return arr
 	}
 
-	p := partition(arr)
+	p := partition(arr, cmp)
 
-	if lIdx < p-1 {
-		quicksort(arr[lIdx:p])
-	}
-	if rIdx >= p+1 {
-		quicksort(arr[p+1 : rIdx])
-	}
+	quicksort(arr[:p])
+	quicksort(arr[p+1:])
 	return arr
 }
 
 func main() {
 
-	for i := 1; i < 16; i += 4 {
-		in := rand.Perm(i)
-		fmt.Println("input: ", in)
+	in := []int{5, 2, 4, 1, 3, 3, 3, 2}
+	fmt.Println("input: ", in)
+	out := quicksort(in)
+	fmt.Println("output:", out)
 
-		out := quicksort(in)
+	for i := 1; i < 16; i += 4 {
+		in = rand.Perm(i)
+		fmt.Println("input: ", in)
+		out = quicksort(in)
 		fmt.Println("output:", out)
 	}
-
 }
