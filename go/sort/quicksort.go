@@ -31,33 +31,32 @@ func partition(arr []int, cmp compare) int {
 	return lIdx
 }
 
-func quicksort(arr []int) []int {
+func quicksort(arr []int) {
 
 	lIdx := 0
 	rIdx := len(arr)
 
 	if rIdx-lIdx <= 0 {
-		return arr
+		return
 	}
 
 	p := partition(arr, cmp)
 
 	quicksort(arr[:p])
 	quicksort(arr[p+1:])
-	return arr
 }
 
 func main() {
 
-	in := []int{5, 2, 4, 1, 3, 3, 3, 2}
-	fmt.Println("input: ", in)
-	out := quicksort(in)
-	fmt.Println("output:", out)
+	arr := []int{5, 2, 4, 1, 3, 3, 3, 2}
+	fmt.Println("input:", arr)
+	quicksort(arr)
+	fmt.Println("sort: ", arr)
 
 	for i := 1; i < 16; i += 4 {
-		in = rand.Perm(i)
-		fmt.Println("input: ", in)
-		out = quicksort(in)
-		fmt.Println("output:", out)
+		arr = rand.Perm(i)
+		fmt.Println("input:", arr)
+		quicksort(arr)
+		fmt.Println("sort: ", arr)
 	}
 }
