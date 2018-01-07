@@ -11,8 +11,8 @@ import (
 const (
 	// IntMax represent the size of int
 	IntMax = int(unsafe.Sizeof(0))
-	// PFInet represent the socket protocol of PF_INET
-	PFInet = 0x0003
+	// EthPALL represent the socket protocol of ETH_P_ALL
+	EthPALL = 0x0003
 	// EthARP represent define ETH_P_ARP
 	EthARP = 0x0806
 )
@@ -115,7 +115,7 @@ func printARPInfo(arp ARP) {
 // 	$ sudo arping -c 1 10.0.0.1
 func main() {
 
-	fd, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(uint16(PFInet))))
+	fd, err := syscall.Socket(syscall.AF_PACKET, syscall.SOCK_RAW, int(htons(uint16(EthPALL))))
 	if err != nil {
 		panic(err)
 	}
@@ -125,7 +125,7 @@ func main() {
 		var buf [42]byte
 		_, _, err := syscall.Recvfrom(fd, buf[:], 0)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 			continue
 		}
 
