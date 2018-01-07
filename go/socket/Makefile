@@ -1,6 +1,12 @@
 OS  = $(shell uname -s)
 
-EX  = arp_sniffer.go arp_spoofing.go ip_sniffer.go syscall_splice.go syscall_select.go # linux only
+# linux only
+EX  = \
+arp_sniffer.go \
+arp_spoofing.go \
+ip_sniffer.go \
+syscall_splice.go \
+syscall_select.go
 
 ifeq ($(OS), Darwin)
 SRC = $(filter-out $(EX), $(wildcard *.go))
