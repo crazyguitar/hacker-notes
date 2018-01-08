@@ -4,6 +4,7 @@ matrix:
       go: 1.8
       before_script:
         - go get github.com/golang/lint/golint
+        - go get golang.org/x/sys
       script:
         - cd go
         - make
@@ -11,6 +12,7 @@ matrix:
       go: 1.9
       before_script:
         - go get github.com/golang/lint/golint
+        - go get golang.org/x/sys
       script:
         - cd go
         - make
@@ -18,6 +20,7 @@ matrix:
       go: master
       before_script:
         - go get github.com/golang/lint/golint
+        - go get golang.org/x/sys
       script:
         - cd go
         - make

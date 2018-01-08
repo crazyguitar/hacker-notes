@@ -5,6 +5,7 @@ EX  = \
 arp_sniffer.go \
 arp_spoofing.go \
 ip_sniffer.go \
+alg_hash_unix.go \
 syscall_splice.go \
 syscall_select.go
 
