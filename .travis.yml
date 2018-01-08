@@ -3,24 +3,24 @@ matrix:
     - language: go
       go: 1.8
       before_script:
-        - go get github.com/golang/lint/golint
-        - go get golang.org/x/sys
+        - go get -u github.com/golang/lint/golint
+        - git clone https://github.com/golang/sys $GOPATH/src/golang.org/x/sys
       script:
         - cd go
         - make
     - language: go
       go: 1.9
       before_script:
-        - go get github.com/golang/lint/golint
-        - go get golang.org/x/sys
+        - go get -u github.com/golang/lint/golint
+        - git clone https://github.com/golang/sys $GOPATH/src/golang.org/x/sys
       script:
         - cd go
         - make
     - language: go
       go: master
       before_script:
-        - go get github.com/golang/lint/golint
-        - go get golang.org/x/sys
+        - go get -u github.com/golang/lint/golint
+        - git clone https://github.com/golang/sys $GOPATH/src/golang.org/x/sys
       script:
         - cd go
         - make
