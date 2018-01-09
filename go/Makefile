@@ -1,4 +1,4 @@
-SUBDIR = list tree socket
+SUBDIR = list tree tls socket
 
 .PHONY: all clean $(SUBDIR)
 
