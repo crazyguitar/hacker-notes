@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
 )
 
@@ -11,6 +10,11 @@ type Tree struct {
 	value int
 	left  *Tree
 	right *Tree
+}
+
+type node struct {
+	t     *Tree
+	level uint64
 }
 
 func newRandSlice(len int) []int {
@@ -63,95 +67,51 @@ func (t *Tree) treeHeight() int {
 	return ret
 }
 
-func (t *Tree) treePrintDepth(depth uint64) {
-	if t == nil {
-		return
-	}
-
-	height := t.treeHeight()
-	if depth > uint64(height) {
-		return
-	}
-
-	total := math.Pow(2, float64(height)) - 1
-
-	queue := []*Tree{}
-	count := uint64(0)
-
-	queue = append(queue, t)
-	d := uint64(0)
-	for len(queue) != 0 {
-		node := queue[0]
-		queue = queue[1:]
-
-		count++
-
-		if node == nil {
-			if depth == d {
-				fmt.Printf("nil ")
-			}
-			queue = append(queue, nil)
-			queue = append(queue, nil)
-		} else {
-			if depth == d {
-				fmt.Printf("%d ", node.value)
-			}
-			queue = append(queue, node.left)
-			queue = append(queue, node.right)
-		}
-
-		// new line
-		if ((count + 1) & (1 << d)) == 0 {
-			d++
-		}
-
-		if count == uint64(total) {
-			break
-		}
-	}
-	fmt.Println()
-}
-
 func (t *Tree) treePrint() {
 	if t == nil {
 		return
 	}
 
-	height := t.treeHeight()
-	total := math.Pow(2, float64(height)) - 1
+	queue := []node{}
+	level := uint64(0)
 
-	queue := []*Tree{}
-	count := uint64(0)
-	depth := uint64(0)
+	queue = append(queue, node{
+		t:     t,
+		level: 0,
+	})
 
-	queue = append(queue, t)
 	for len(queue) != 0 {
-		node := queue[0]
+
+		n := queue[0]
+
 		queue = queue[1:]
 
-		count++
-
-		if node == nil {
-			fmt.Printf("nil ")
-			queue = append(queue, nil)
-			queue = append(queue, nil)
+		if n.level != level {
+			fmt.Printf("\n")
+			level = n.level
+		} else if level == 0 {
+			// do nothing
 		} else {
-			fmt.Printf("%d ", node.value)
-			queue = append(queue, node.left)
-			queue = append(queue, node.right)
+			fmt.Printf(",")
 		}
 
-		// new line
-		if ((count + 1) & (1 << depth)) == 0 {
-			fmt.Println()
-			depth++
+		if n.t != nil {
+			fmt.Printf("(%d)", n.t.value)
+		} else {
+			fmt.Printf("( )")
+			continue
 		}
 
-		// if count reach total, stop loop
-		if count == uint64(total) {
-			break
-		}
+		queue = append(queue, node{
+			t:     n.t.left,
+			level: level + 1,
+		})
+		queue = append(queue, node{
+			t:     n.t.right,
+			level: level + 1,
+		})
 	}
+	fmt.Println()
 }
 
 func main() {
@@ -167,7 +127,4 @@ func main() {
 		tree = tree.insert(v)
 	}
 	tree.treePrint()
-
-	fmt.Print("Depth: 3: ")
-	tree.treePrintDepth(3)
 }
