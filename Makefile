@@ -1,4 +1,4 @@
-SUBDIR = go c
+SUBDIR = aws go c
 
 .PHONY: all clean $(SUBDIR)
 
