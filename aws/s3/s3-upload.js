@@ -128,7 +128,7 @@ function signature (secret, time, region, service, str2Sign) {
 async function upload (url, formData) {
   const httpost = util.promisify(request.post)
   try {
-    await httpost({url: url, formData: formData})
+    await httpost({ url: url, formData: formData })
   } catch (e) {
     console.error(e.message)
     process.exit(1)
@@ -144,13 +144,13 @@ expire.setHours(expire.getHours() + 1)
 const policy = {
   expiration: expire.toISOString(),
   conditions: [
-    {acl: 'private'},
-    {bucket: bucket},
+    { acl: 'private' },
+    { bucket: bucket },
     ['starts-with', '$key', ''],
     ['content-length-range', 1, 10485760], // 1 Byte to 10 MB
-    {'x-amz-date': toTime(date)},
-    {'x-amz-credential': credential(accessKeyId, expire, region, 's3')},
-    {'x-amz-algorithm': 'AWS4-HMAC-SHA256'}
+    { 'x-amz-date': toTime(date) },
+    { 'x-amz-credential': credential(accessKeyId, expire, region, 's3') },
+    { 'x-amz-algorithm': 'AWS4-HMAC-SHA256' }
   ]
 }
 
